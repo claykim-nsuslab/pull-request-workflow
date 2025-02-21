@@ -43,16 +43,12 @@ export const PullRequestWorkflow = async (): Promise<void> => {
         payload.action === 'opened' &&
         payload.pull_request
       ) {
-        const assignedReviewers = payload.pull_request.requested_reviewers.map(
-          (reviewer: {login: string}) => reviewer.login
-        )
         await Slack.postMessage({
           channel: core.getInput('slack-channel-id'),
           text: `${github.context.payload.repository?.name}-${payload.pull_request?.number}`,
           blocks: generatePullRequestOpenedMessage(
             github.context,
-            githubSlackUserMapper,
-            assignedReviewers
+            githubSlackUserMapper
           )
         })
       } else {
@@ -190,7 +186,7 @@ export const PullRequestWorkflow = async (): Promise<void> => {
                 blocks: generateSecondReviewerMessage(
                   github.context,
                   githubSlackUserMapper,
-                  getRandomItemFromArray(SECOND_APPROVERS)
+                  'test'
                 )
               })
             }
