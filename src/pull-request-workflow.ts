@@ -115,10 +115,20 @@ export const PullRequestWorkflow = async (): Promise<void> => {
           payload.action === 'review_requested' &&
           payload.pull_request
         ) {
+          /*
           await Slack.postMessage({
             channel: core.getInput('slack-channel-id'),
             thread_ts: thread?.ts,
             blocks: generatePullRequestReviewRequestedMessage(
+              github.context,
+              githubSlackUserMapper
+            )
+          })
+          */
+          await Slack.postMessage({
+            channel: core.getInput('slack-channel-id'),
+            text: `${github.context.payload.repository?.name}-${payload.pull_request?.number}`,
+            blocks: generatePullRequestOpenedMessage(
               github.context,
               githubSlackUserMapper
             )
