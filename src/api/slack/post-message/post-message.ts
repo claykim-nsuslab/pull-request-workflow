@@ -3,6 +3,7 @@ import {
   ChatPostMessageResponse,
   WebClient
 } from '@slack/web-api'
+import * as core from '@actions/core'
 
 type PostMessage = ({
   channel,
@@ -11,13 +12,17 @@ type PostMessage = ({
 
 export const postMessage = (slackClient: WebClient): PostMessage => {
   return async ({channel, ...rest}) => {
+    core.info(`Posting message to Slack channel: ${channel} with parameters: ${JSON.stringify(rest)}`)
     try {
-      return await slackClient.chat.postMessage({
+      const response = await slackClient.chat.postMessage({
         channel,
         unfurl_links: false,
         ...rest
       })
+      core.info(`Message posted successfully: ${JSON.stringify(response)}`)
+      return response
     } catch (error) {
+      core.error(`Error posting message to Slack: ${error}`)
       return Promise.reject(error)
     }
   }
