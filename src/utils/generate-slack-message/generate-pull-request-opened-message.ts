@@ -4,9 +4,7 @@ import {getUserToLog} from '../get-user-to-log'
 
 export const generatePullRequestOpenedMessage = (
   githubContext: Context,
-  githubSlackUserMapper: Record<string, string>,
-  firstReviewer: string,
-  secondReviewer: string
+  githubSlackUserMapper: Record<string, string>
 ): (KnownBlock | Block)[] => {
   const {pull_request, repository} = githubContext.payload
   const date = new Date(pull_request?.created_at).toLocaleDateString('de-DE', {
@@ -16,6 +14,7 @@ export const generatePullRequestOpenedMessage = (
     timeZone: 'Europe/Berlin'
   })
   const pullRequestTitle = `<${pull_request?.html_url}|${pull_request?.title}>`
+  const reviewers = pull_request?.requested_reviewers?.map((reviewer: {login: string}) => getUserToLog(githubSlackUserMapper, reviewer.login)).join(', ')
   return [
     {
       type: 'section',
@@ -57,10 +56,7 @@ export const generatePullRequestOpenedMessage = (
             githubContext.actor
           )} \n*Repository:* <${repository?.html_url}|${
             repository?.name
-          }> \n*Created At:* ${date} | ${time} \n*Reviewers:* ${getUserToLog(
-            githubSlackUserMapper,
-            firstReviewer
-          )} | ${getUserToLog(githubSlackUserMapper, secondReviewer)}`
+          }> \n*Created At:* ${date} | ${time} \n*Reviewers:* ${reviewers}`
         }
       ]
     }

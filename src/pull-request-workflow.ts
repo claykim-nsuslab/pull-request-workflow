@@ -13,9 +13,7 @@ import {
   generateSecondReviewerMessage,
   getFileContent,
   getPullRequestReviewStateUsers,
-  getPullRequestThread,
-  getRandomItemFromArray,
-  requestTwoReviewers
+  getPullRequestThread
 } from './utils'
 import {allowedEventNames, GithubEventNames, ReviewStates} from './constants'
 import {pullRequestReminder} from './services'
@@ -45,14 +43,8 @@ export const PullRequestWorkflow = async (): Promise<void> => {
         payload.action === 'opened' &&
         payload.pull_request
       ) {
-        const [firstReviewer, secondReviewer] = await requestTwoReviewers(
-          [actor],
-          githubUserNames,
-          {
-            owner: repo.owner,
-            repo: repo.repo,
-            pull_number: payload.pull_request.number
-          }
+        const assignedReviewers = payload.pull_request.requested_reviewers.map(
+          (reviewer: {login: string}) => reviewer.login
         )
         await Slack.postMessage({
           channel: core.getInput('slack-channel-id'),
@@ -60,8 +52,7 @@ export const PullRequestWorkflow = async (): Promise<void> => {
           blocks: generatePullRequestOpenedMessage(
             github.context,
             githubSlackUserMapper,
-            firstReviewer,
-            secondReviewer
+            assignedReviewers
           )
         })
       } else {
