@@ -17,6 +17,7 @@ import {
 } from './utils'
 import {allowedEventNames, GithubEventNames, ReviewStates} from './constants'
 import {pullRequestReminder} from './services'
+import {githubService} from './api/github'
 
 export const PullRequestWorkflow = async (): Promise<void> => {
   try {
@@ -46,13 +47,47 @@ export const PullRequestWorkflow = async (): Promise<void> => {
         const assignedReviewers = payload.pull_request.requested_reviewers.map(
           (reviewer: {login: string}) => reviewer.login
         )
+
+        const collaborators = await githubService.listCollaborators({
+          owner: repo.owner,
+          repo: repo.repo
+        })
+
+        const collaboratorLogins = collaborators.data.map(
+          (collaborator: {login: string}) => collaborator.login
+        )
+
+        const validReviewers = assignedReviewers.filter(reviewer =>
+          collaboratorLogins.includes(reviewer)
+        )
+
+        if (validReviewers.length === 0) {
+          core.warning(
+            'None of the specified reviewers are collaborators of the repository.'
+          )
+          return
+        }
+
+        if (validReviewers.length !== assignedReviewers.length) {
+          core.warning(
+            'Some of the specified reviewers are not collaborators and will be skipped.'
+          )
+        }
+
+        await githubService.requestReviewers({
+          owner: repo.owner,
+          repo: repo.repo,
+          pull_number: payload.pull_request.number,
+          reviewers: validReviewers
+        })
+
         await Slack.postMessage({
           channel: core.getInput('slack-channel-id'),
           text: `${github.context.payload.repository?.name}-${payload.pull_request?.number}`,
           blocks: generatePullRequestOpenedMessage(
             github.context,
             githubSlackUserMapper,
-            assignedReviewers
+            validReviewers
           )
         })
       } else {
