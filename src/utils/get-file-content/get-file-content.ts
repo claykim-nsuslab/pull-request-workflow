@@ -50,14 +50,6 @@ const validateData = ({
       `"githubSlackUserMapper" should be defined as {"githubUserName1":"slackMemberId1", "githubUserName2":"slackMemberId2", "githubUserName3":"slackMemberId3"}`
     )
   }
-  if (
-    githubUserNames?.length < 3 ||
-    Object.keys(githubSlackUserMapper)?.length < 3
-  ) {
-    throw new Error(
-      `In "githubUserNames" or "githubSlackUserMapper", at least 3 users should be added`
-    )
-  }
 }
 
 const isObject = (item: unknown): boolean => {
