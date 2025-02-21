@@ -6,5 +6,6 @@
     "scakarci": "U04LNHEVA48",
     "cakarci": "U035MNNF8LW"
   },
-  "remindAfter": 12
+  "remindAfter": 12,
+  "reviewers": ["reviewer1", "reviewer2"]
 }
