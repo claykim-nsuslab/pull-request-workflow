@@ -1,4 +1,5 @@
 import {readFile} from 'fs/promises'
+import * as core from '@actions/core'
 
 interface PullRequestWorkflowInterface {
   teamName?: string
@@ -8,13 +9,17 @@ interface PullRequestWorkflowInterface {
 }
 export const getFileContent =
   async (): Promise<PullRequestWorkflowInterface> => {
+    core.info('Starting getFileContent function')
     try {
       const data = JSON.parse(
         await readFile('./.github/pull-request-workflow.json', 'utf8')
       )
+      core.info(`File content read successfully: ${JSON.stringify(data)}`)
       validateData(data)
+      core.info('File content validated successfully')
       return data
     } catch (err) {
+      core.error(`Error in getFileContent function: ${err}`)
       return await Promise.reject(err)
     }
   }
